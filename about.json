@@ -1,0 +1,15 @@
+{
+  "name": "Category Icons (mod2)",
+  "component": true,
+  "license_url": "https://www.gnu.org/licenses/gpl-3.0.html",
+  "about_url": "https://github.com/rcreagh/discourse-category-icons-mod2",
+  "authors": "modified by RogerCO",
+  "theme_version": "2.0",
+  "minimum_discourse_version": null,
+  "maximum_discourse_version": null,
+  "assets": {
+  },
+  "color_schemes": {
+  },
+  "learn_more": "https://meta.discourse.org/t/beginners-guide-to-using-discourse-themes/91966"
+}

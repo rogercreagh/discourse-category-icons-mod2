@@ -1,0 +1,139 @@
+<script type="text/discourse-plugin" version="0.8.26">
+// Modified RCO Dec 2019, Jan 2020
+// icon replaces colour stripe
+// icon colour picked up from category colour
+// double stripe for parent category removed
+// css adjusted to make icon centre with stripe
+// partial match on slug, if item[3]=true then exact match
+
+  let categoryThemeList = settings.category_icon_list.split('|');
+  let lockIcon = settings.category_lock_icon || 'lock';
+
+  const { iconHTML, iconNode } = require("discourse-common/lib/icon-library");
+  const { isRTL } = require("discourse/lib/text-direction");
+  const { h } = require("virtual-dom");
+
+  var get = Em.get,
+    escapeExpression = Handlebars.Utils.escapeExpression;
+
+  function categoryStripe(color, classes) {
+    var style = color ? "style='background-color: #" + color + ";'" : "";
+    return "<span class='" + classes + "' " + style + "></span>";
+  }
+
+    function checkSlug(themeItem,slug) {
+        let itemArr = themeItem.split(',');
+        let slugBit = itemArr[0];
+        return slug.indexOf(slugBit);
+    }
+
+  function getIconItem(categorySlug) {
+//    let categoryThemeItem = categoryThemeList.find((str) => str.indexOf(categorySlug) > -1);
+    let categoryThemeItem = categoryThemeList.find((str) => categorySlug.indexOf(str.substr(0,str.indexOf(","))) > -1);
+    if (categoryThemeItem) {
+        let iconItem = categoryThemeItem.split(',');
+        // Ensure exact match
+        if((iconItem[3]=='true') && (iconItem[0] !== categorySlug)) {
+            return;
+        }
+        return iconItem;
+    }
+  }
+
+  function categoryIconsRenderer(category, opts) {
+    let description = get(category, "description_text");
+    let restricted = get(category, "read_restricted");
+    let url = opts.url
+      ? opts.url
+      : Discourse.getURL("/c/") + Discourse.Category.slugFor(category);
+    let href = opts.link === false ? "" : url;
+    let tagName = opts.link === false || opts.link === "false" ? "span" : "a";
+    let extraClasses = opts.extraClasses ? " " + opts.extraClasses : "";
+    let ccolor = get(category, "color");
+    let html = "";
+    let parentCat = null;
+    let categoryDir = "";
+    let catStripe="";
+
+    if (!opts.hideParent) {
+      parentCat = Discourse.Category.findById(
+        get(category, "parent_category_id")
+      );
+    }
+
+    const categoryStyle = opts.categoryStyle || Discourse.SiteSettings.category_style;
+    /// Add custom category icon from theme settings
+    let iconItem = getIconItem(category.slug);
+    if(iconItem) {
+        let itemColor = iconItem[2] == 'catcol' ? `style="color: #${ccolor}"` : iconItem[2];
+        let itemIcon = iconItem[1] != '' ? iconHTML(iconItem[1]) : "";
+        html += `<span ${itemColor} class="category-badge-icon">${itemIcon}</span>`;
+    } else {
+    /// End custom category icon 
+        if (categoryStyle !== "none") {
+//            if (parentCat && parentCat !== category) {
+//            html += categoryStripe(
+//              get(parentCat, "color"),
+//              "badge-category-parent-bg"
+//            );
+//          }
+            html += categoryStripe(ccolor, "badge-category-bg");
+        }
+    }
+
+    let classNames = "badge-category clear-badge";
+    if (restricted) {
+      classNames += " restricted";
+    }
+
+    let style = "";
+    if (categoryStyle === "box") {
+      style = `style="color: #${get(category, "text_color")};"`;
+    }
+
+    html +=
+      `<span ${style} ` +
+      'data-drop-close="true" class="' +
+      classNames +
+      '"' +
+      (description ? 'title="' + escapeExpression(description) + '" ' : "") +
+      ">";
+
+
+    let categoryName = escapeExpression(get(category, "name"));
+
+    if (Discourse.SiteSettings.support_mixed_text_direction) {
+      categoryDir = isRTL(categoryName) ? 'dir="rtl"' : 'dir="ltr"';
+    }
+
+    if (restricted) {
+      html += iconHTML(lockIcon);
+    }
+    html += `<span class="category-name" ${categoryDir}>${categoryName}</span></span>`;
+
+    if (href) {
+      href = ` href="${href}" `;
+    }
+
+    extraClasses = categoryStyle ? categoryStyle + extraClasses : extraClasses;
+    return `<${tagName} class="badge-wrapper ${extraClasses}" ${href}>${html}</${tagName}>`;
+  };
+
+  api.replaceCategoryLinkRenderer(categoryIconsRenderer);
+
+  api.createWidget("category-icon", {
+    tagName: "div.category-icon-widget",
+    html(attrs) {
+      let iconItem = getIconItem(attrs.category.slug);
+      if(iconItem && !attrs.category.parent_category_id) {
+        let itemColor = iconItem[2] ? `color: ${iconItem[2]}` : "";
+        let itemIcon = iconItem[1] != '' ? iconNode(iconItem[1]) : "";
+        return h("span.category-icon", { "style": itemColor }, itemIcon);
+      }
+    }
+  });
+</script>
+
+<script type="text/x-handlebars" data-template-name="/connectors/category-title-before/category-icon-template">
+  {{mount-widget widget="category-icon" args=(hash category=category)}}
+</script>

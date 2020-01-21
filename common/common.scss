@@ -1,0 +1,28 @@
+span.category-badge-icon {
+  display: inline-flex;
+  align-self: center;
+  .d-icon {
+    opacity: 1;
+    font-size: 1.3em;
+  }
+}
+
+.badge-wrapper.bar .badge-category-bg {
+    margin: 0 6px 0 6px;
+}
+
+.categories-list .category h3 .d-icon,
+.badge-wrapper .badge-category .d-icon {
+ /* margin-right: 5px; */
+}
+
+.categories-list .category .category-icon .d-icon {
+  color: inherit;
+}
+
+.categories-list .category-box-heading h3 div {
+  display: inline;
+}
+.select-kit .d-icon {
+	color:unset;
+}
