@@ -21,23 +21,26 @@
     return "<span class='" + classes + "' " + style + "></span>";
   }
 
-    function checkSlug(themeItem,slug) {
-        let itemArr = themeItem.split(',');
-        let slugBit = itemArr[0];
-        return slug.indexOf(slugBit);
-    }
+//    function checkSlug(themeItem,slug) {
+//        let itemArr = themeItem.split(',');
+//        let slugBit = itemArr[0];
+//        return slug.indexOf(slugBit);
+//    }
 
   function getIconItem(categorySlug) {
-//    let categoryThemeItem = categoryThemeList.find((str) => str.indexOf(categorySlug) > -1);
-    let categoryThemeItem = categoryThemeList.find((str) => categorySlug.indexOf(str.substr(0,str.indexOf(","))) > -1);
+  	// return nothing if categorySlug not specified
+  	if (!categorySlug) return;
+    let categoryThemeItem = categoryThemeList.find((str) => 
+    	str.indexOf(",") > -1 ? categorySlug.indexOf(str.substr(0,str.indexOf(","))) > -1 : '');
     if (categoryThemeItem) {
-        let iconItem = categoryThemeItem.split(',');
-        // Ensure exact match
-        if((iconItem[3]=='true') && (iconItem[0] !== categorySlug)) {
-            return;
+    	let iconItem = categoryThemeItem.split(',');
+    	// Test partial/exact match
+        if(iconItem[3]=='partial') {
+            return iconItem;
+        } else if(iconItem[0] === categorySlug) {
+            return iconItem;
         }
-        return iconItem;
-    }
+	}
   }
 
   function categoryIconsRenderer(category, opts) {
